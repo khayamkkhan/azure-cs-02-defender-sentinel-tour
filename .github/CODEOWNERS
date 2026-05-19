@@ -1,0 +1,9 @@
+# CODEOWNERS for azure-cs-02-defender-sentinel-tour
+#
+# Sole maintainer and code owner of this repository.
+# All technical work (Sentinel/Defender configuration, KQL queries,
+# investigation walkthrough, screenshots, and documentation) is by Khayam Khan.
+#
+# Reference: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/customizing-your-repository/about-code-owners
+
+* @khayamkkhan

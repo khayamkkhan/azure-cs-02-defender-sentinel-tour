@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Secrets — NEVER commit
+*.env
+*.pem
+*.key
+*.pfx
+secrets/
+credentials.json
+.azure/
+azureauth.json
+
+# Local state
+*.log
+*.local
+local-notes/
+scratch/
+
+# Bicep build artefacts (when retrofit happens at AZ-104)
+*.arm.json
