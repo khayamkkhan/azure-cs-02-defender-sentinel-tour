@@ -1,0 +1,32 @@
+// =============================================================================
+// Purpose:        List all resource write operations in the subscription
+//                 from the last 24 hours. Used as the smoke-test query after
+//                 onboarding Sentinel to verify the Azure Activity connector
+//                 is actually shipping data.
+// Author:         Khayam Khan
+// Date:           2026-05-19
+// Source table:   AzureActivity
+// Expected rows:  Anywhere from a handful (quiet weekend) to 200+ (active
+//                 build session). On Project 02 build day: ~258 rows in 7d.
+// Used in lab:    Block D verification, Block E KQL drill
+// =============================================================================
+
+AzureActivity
+| where TimeGenerated > ago(24h)                         // last 24h window
+| where OperationNameValue endswith "write"              // any create/update op
+| project
+    TimeGenerated,
+    Caller,                                              // who did it (UPN)
+    CallerIpAddress,                                     // from where
+    OperationNameValue,                                  // what they did
+    ResourceGroup,                                       // scope
+    ActivityStatusValue                                  // Succeeded/Failed
+| sort by TimeGenerated desc
+
+// =============================================================================
+// Example output (sanitised):
+// TimeGenerated         Caller                          OperationNameValue                                       ResourceGroup            Status
+// 2026-05-19T08:42:01Z  khan.khayam.koh@gmail.com       Microsoft.Insights/diagnosticSettings/write              rg-portfolio-baseline   Succeeded
+// 2026-05-19T08:31:14Z  khan.khayam.koh@gmail.com       Microsoft.OperationalInsights/workspaces/write           rg-portfolio-baseline   Succeeded
+// 2026-05-19T08:13:22Z  khan.khayam.koh@gmail.com       Microsoft.OperationalInsights/workspaces/dataExports/... rg-portfolio-baseline   Succeeded
+// =============================================================================

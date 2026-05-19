@@ -1,0 +1,32 @@
+// =============================================================================
+// Purpose:        Group Microsoft Entra audit events by ActivityDisplayName
+//                 to see what kinds of actions are happening in the tenant.
+//                 First useful query to run once the Entra ID connector is
+//                 confirmed Connected — gives a high-level picture of
+//                 administrative activity without scanning individual rows.
+// Author:         Khayam Khan
+// Date:           2026-05-19
+// Source table:   AuditLogs
+// Expected rows:  1 row per distinct activity type. Quiet tenant: 1–3 rows.
+//                 Active tenant: 20+ (group adds, role assignments, app
+//                 registrations, password resets, etc.).
+// Used in lab:    Block D — first-look query after Entra connector activation
+// =============================================================================
+
+AuditLogs
+| where TimeGenerated > ago(7d)
+| summarize
+    Count = count(),
+    Latest = max(TimeGenerated),
+    Earliest = min(TimeGenerated)
+    by ActivityDisplayName
+| sort by Count desc
+
+// =============================================================================
+// Example output (Project 02 day-1, fresh tenant):
+// ActivityDisplayName       Count   Latest                    Earliest
+// Add service principal     1       2026-05-19T08:40:02Z      2026-05-19T08:40:02Z
+//
+// (Quiet tenants generate few audit events. To force events for testing,
+//  create+delete a test group at entra.microsoft.com → Groups.)
+// =============================================================================

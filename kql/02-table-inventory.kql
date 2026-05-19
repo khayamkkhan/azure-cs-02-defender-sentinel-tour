@@ -1,0 +1,46 @@
+// =============================================================================
+// Purpose:        Inventory every table in the workspace that has received
+//                 data in the last N days, with row counts and latest-ingest
+//                 timestamps per table.
+//
+//                 This is the FIRST QUERY to run when diagnosing "why isn't
+//                 my connector showing data." It instantly tells you which
+//                 connectors are ACTUALLY shipping vs. just claiming to be
+//                 Connected in the UI. Used during Block D troubleshooting
+//                 of the Microsoft Entra ID connector — confirmed the
+//                 AuditLogs table existed but had zero rows for ~45 minutes
+//                 due to first-activation lag.
+//
+// Author:         Khayam Khan
+// Date:           2026-05-19
+// Source tables:  ALL tables in workspace
+// Expected rows:  1 row per active table. On a fresh lab workspace,
+//                 typically 3–6 rows: AzureActivity, Usage, Operation,
+//                 AuditLogs, SigninLogs, Heartbeat.
+// Used in lab:    Block D troubleshooting (Entra connector first-activation lag)
+// =============================================================================
+
+union withsource=_Source *                               // scan every table
+| where TimeGenerated > ago(7d)
+| summarize
+    Count = count(),                                     // total rows ingested
+    LatestIngest = max(TimeGenerated)                    // freshness check
+    by _Source
+| sort by Count desc
+
+// =============================================================================
+// Example output during Block D troubleshooting:
+// _Source         Count   LatestIngest
+// AzureActivity   258     2026-05-19T08:37:58Z
+// Usage           3       2026-05-19T08:13:22Z
+// Operation       1       2026-05-19T08:13:22Z
+// (AuditLogs was MISSING here — that's how we caught the silent
+//  connector failure before it cost troubleshooting hours.)
+//
+// Example output after the lag resolved (~45 min later):
+// _Source         Count   LatestIngest
+// AzureActivity   263     2026-05-19T08:45:12Z
+// AuditLogs       1       2026-05-19T08:40:02Z         <-- finally arrived
+// Usage           3       2026-05-19T08:13:22Z
+// Operation       1       2026-05-19T08:13:22Z
+// =============================================================================

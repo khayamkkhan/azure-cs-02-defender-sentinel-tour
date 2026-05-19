@@ -1,0 +1,46 @@
+// =============================================================================
+// Purpose:        Surface Azure resource create/update operations that were
+//                 blocked by Azure Policy. Useful for both:
+//                 (a) governance reporting — "what is our policy catching?"
+//                 (b) incident response — "did the attacker try something
+//                     our guardrails stopped?"
+//
+//                 The query was born during Block B of this project, when
+//                 Project 01's required-tag policies blocked Sentinel from
+//                 creating its SecurityInsights child resource on the
+//                 workspace. The policy denial was visible in AzureActivity
+//                 with status "Failed" and substatus reason
+//                 "RequestDisallowedByPolicy" — captured here for posterity.
+//
+// Author:         Khayam Khan
+// Date:           2026-05-19
+// Source table:   AzureActivity
+// Expected rows:  Zero in a clean tenant. Anything > 0 = either a real
+//                 deny (working as intended) or a misconfigured policy
+//                 blocking legitimate work.
+// Used in lab:    Section #12 troubleshooting evidence (Sentinel-vs-policy)
+// =============================================================================
+
+AzureActivity
+| where TimeGenerated > ago(30d)
+| where ActivityStatusValue == "Failed"
+| where Properties has "RequestDisallowedByPolicy"        // policy-specific
+       or Properties has "policyDefinitions"              // alternate signal
+| project
+    TimeGenerated,
+    Caller,
+    OperationNameValue,
+    ResourceId,
+    ActivityStatusValue,
+    PolicyError = tostring(parse_json(Properties).statusMessage)
+| sort by TimeGenerated desc
+
+// =============================================================================
+// Example output during Block B troubleshooting:
+// TimeGenerated         Caller                      OperationNameValue                                                  ResourceId                                                            PolicyError
+// 2026-05-19T07:08:33Z  khan.khayam.koh@gmail.com   Microsoft.OperationsManagement/solutions/write                      .../solutions/SecurityInsights(log-portfolio-baseline)                "Resource 'SecurityInsights(log-portfolio-baseline)' was disallowed by policy.
+//                                                                                                                                                                                              Policy identifiers: 'require-tag-environment', 'require-tag-project', 'require-tag-owner'..."
+//
+// Resolution: 3 narrowly-scoped policy exemptions (Waiver category) on
+// rg-portfolio-baseline. Documented in Section #12 of project README.
+// =============================================================================

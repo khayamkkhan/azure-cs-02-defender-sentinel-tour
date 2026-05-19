@@ -1,0 +1,53 @@
+// =============================================================================
+// Purpose:        Distinguish between human-initiated vs service-principal-
+//                 initiated Entra audit events. Useful for spotting:
+//                 (a) automation activity (expected: service principals)
+//                 (b) shadow IT or stale apps (unexpected: SPs you don't
+//                     recognize)
+//                 (c) admin-by-human actions worth reviewing for least-
+//                     privilege adherence
+//
+//                 Foundational query for the SC-300 / SC-200 work to come
+//                 in Projects 05 and 06. Listed here in Project 02 as one
+//                 of the first "real SOC" queries built against the
+//                 freshly-connected AuditLogs table.
+//
+// Author:         Khayam Khan
+// Date:           2026-05-19
+// Source table:   AuditLogs
+// Expected rows:  Two summary rows: one for user-initiated, one for SP-
+//                 initiated, with counts of distinct activities each
+//                 performed.
+// Used in lab:    Block H — KQL collection
+// =============================================================================
+
+AuditLogs
+| where TimeGenerated > ago(7d)
+| extend
+    InitiatorType = case(
+        isnotempty(tostring(InitiatedBy.user.userPrincipalName)),         "User",
+        isnotempty(tostring(InitiatedBy.app.servicePrincipalName)),       "Service Principal",
+        isnotempty(tostring(InitiatedBy.app.displayName)),                "Service Principal",
+                                                                          "Unknown"
+    ),
+    InitiatorName = coalesce(
+        tostring(InitiatedBy.user.userPrincipalName),
+        tostring(InitiatedBy.app.servicePrincipalName),
+        tostring(InitiatedBy.app.displayName)
+    )
+| summarize
+    EventCount = count(),
+    DistinctActivities = dcount(ActivityDisplayName),
+    LatestEvent = max(TimeGenerated)
+    by InitiatorType, InitiatorName
+| sort by EventCount desc
+
+// =============================================================================
+// Example output (early-stage workspace):
+// InitiatorType        InitiatorName                                EventCount   DistinctActivities   LatestEvent
+// Service Principal    Azure Resource Manager                       1            1                    2026-05-19T08:40:02Z
+//
+// (Once the lab activity ramps up, expect to see at least one User row
+//  for khan.khayam.koh@gmail.com plus several Service Principal rows
+//  for Defender for Cloud, Microsoft Sentinel, and Microsoft Graph.)
+// =============================================================================
