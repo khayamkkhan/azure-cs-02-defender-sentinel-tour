@@ -327,3 +327,9 @@ The four non-trivial issues encountered during this build, documented per the po
 ## 13. Tags
 
 `#azure` `#azure-security` `#microsoft-sentinel` `#siem` `#kql` `#defender-xdr` `#defender-for-cloud` `#microsoft-entra` `#azure-policy` `#zero-trust` `#sc-900` `#microsoft-cybersecurity-architect` `#soc-analyst` `#cloud-security`
+
+---
+
+> ### A note on this README
+>
+> This README was drafted with AI assistance (Claude) for prose polish, formatting consistency, and section structure. The **technical work** behind it — every Sentinel connector wired, every KQL query authored and validated, every analytic rule tuned with entity mapping, every incident triaged end-to-end, every policy exemption created, every screenshot captured, every architectural decision — was done by me. Disclosing AI assistance in documentation is the right default for transparency, and it should be the norm rather than the exception.
