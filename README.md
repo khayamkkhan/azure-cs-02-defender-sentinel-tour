@@ -9,11 +9,11 @@
 
 ## 1. What I Built
 
-A **working Microsoft Sentinel SIEM workspace** with real telemetry flowing in, a triggered detection rule that fired on my own activity, and a fully triaged synthetic incident — all built on the Project 01 baseline. Plus a **field guide** mapping eight Microsoft security portals to what they do, where they live, and which cert they appear on.
+A working Microsoft Sentinel SIEM workspace with real telemetry flowing in, a detection rule that fired on my own activity, and a fully triaged synthetic incident, all built on the Project 01 baseline. Plus a field guide mapping eight Microsoft security portals to what they do, where they live, and which cert they appear on.
 
 Concretely: Sentinel onboarded on `log-portfolio-baseline`, two free-tier data connectors active (Azure Activity, Microsoft Entra ID), a custom scheduled analytic rule that auto-generates incidents on subscription writes, end-to-end incident triage (assign → investigate → resolve with comment + classification), and Defender for Cloud running on the free Foundational CSPM tier as the always-on security posture baseline.
 
-Where Project 01 set up *the building*, this is *the security control room* — the place I'll work from for the rest of the portfolio.
+Where Project 01 set up the building, this is the security control room, the place I'll work from for the rest of the portfolio.
 
 ---
 
@@ -25,7 +25,7 @@ It's also the natural starting point for the SOC analyst pivot: an empty Sentine
 
 **Who hurts**: SC-900 candidates studying from theory only; SOC analysts who've used third-party SIEMs but never built one from scratch; cloud security engineers trying to demonstrate "I've actually deployed Sentinel" without setting up an enterprise lab.
 
-**Why it matters**: My day job is SOC L1.5 — Sentinel/KQL is a daily tool I want to *build* from, not just *consume*. SC-200 (Project 05) and the Sentinel SOC Build-Out depend on having a working Sentinel workspace with real telemetry first. This project is the dependency, not the destination.
+**Why it matters**: My day job is SOC L1.5, and Sentinel/KQL is a daily tool I want to build from, not just consume. SC-200 (Project 05) and the Sentinel SOC Build-Out depend on having a working Sentinel workspace with real telemetry first. This project is the dependency, not the destination.
 
 ---
 
@@ -320,7 +320,7 @@ The four non-trivial issues encountered during this build, documented per the po
 ### Cross-cutting takeaways
 
 - **Three of four issues were trust-the-UI failures**: the UI told me one thing (connector Disconnected, page moved, tab gone) while the underlying system was either working fine or had moved transparently. The trustworthy verifications are queries on the raw data, not portal status indicators.
-- **Section 12 became the longest section of the README** — and it's the one I'd most want a hiring manager to read first.
+- This section ended up the longest in the README, and it's the one I'd most want a hiring manager to read first.
 
 ---
 
